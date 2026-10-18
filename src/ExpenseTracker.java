@@ -1,3 +1,4 @@
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.math.BigDecimal;
@@ -8,6 +9,7 @@ public class ExpenseTracker {
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
         ArrayList<Expense> expenses = new ArrayList<>();
+        loadExpenses(expenses);
 
         boolean running = true;
         while(running){
@@ -101,6 +103,7 @@ public class ExpenseTracker {
                     break;
                 case "5":
                     System.out.println("Exit");
+                    saveExpenses(expenses);
                     running = false;
                     break;
                 default:
@@ -109,5 +112,31 @@ public class ExpenseTracker {
         }
 
         input.close();
+    }
+    public static void saveExpenses(ArrayList<Expense> expenses){
+        try (PrintWriter writer = new PrintWriter(new FileWriter("expenses.csv"))) {
+            for(Expense e : expenses){
+                writer.println(e.getName() + "," + e.getAmount() + "," + e.getCategory());
+            }
+        } catch (IOException e) {
+            System.out.println("Error saving expenses!");
+        }
+    }
+    public static void loadExpenses(ArrayList<Expense> expenses) {
+        try (BufferedReader reader = new BufferedReader(new FileReader("expenses.csv"))) {
+            String line;
+            while((line = reader.readLine()) != null){
+                String[] parts = line.split(",");
+                BigDecimal cost = new BigDecimal(parts[1]);
+                Expense newExpense = new Expense(parts[0], cost, parts[2]);
+                expenses.add(newExpense);
+            }
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("No saved expenses found. Starting fresh!");
+        }
+        catch (IOException e) {
+            System.out.println("Error reading file!");
+        }
     }
 }

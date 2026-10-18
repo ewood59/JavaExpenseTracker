@@ -25,4 +25,8 @@ public class Expense {
     public String getName(){
         return name;
     }
+
+    public String getCategory(){
+        return category;
+    }
 }
