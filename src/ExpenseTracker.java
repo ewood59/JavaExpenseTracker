@@ -26,25 +26,44 @@ public class ExpenseTracker {
 
             switch(choice){
                 case "1":
-                    System.out.print("Enter expense name: ");
-                    String name = input.nextLine();
+                    String name = null;
+                    boolean trying = true;
+                    while(trying) {
+                        System.out.print("Enter expense name: ");
+                        name = input.nextLine();
+                        if(name.isBlank() || name.contains(",")) {
+                            System.out.println("Invalid name! Cannot be blank or contain commas.");
+                            continue;
+                        }
+                        trying = false;
+                    }
 
                     BigDecimal cost = null;
-                    boolean tryingCost = true;
-                    while(tryingCost) {
+                    trying = true;
+                    while(trying) {
                         System.out.print("Enter cost: ");
                         try {
                             cost = new BigDecimal(input.nextLine());
                             if(cost.compareTo(BigDecimal.ZERO) <= 0) throw new NumberFormatException();
                             cost = cost.setScale(2, RoundingMode.UNNECESSARY);
-                            tryingCost = false;
+                            trying = false;
                         } catch (NumberFormatException | ArithmeticException e) {
                             System.out.println("Invalid input");
                         }
                     }
 
-                    System.out.print("Enter category: ");
-                    String category = input.nextLine();
+                    String category = null;
+                    trying = true;
+                    while(trying) {
+                        System.out.print("Enter category: ");
+                        category = input.nextLine();
+                        if(category.isBlank() || category.contains(",")) {
+                            System.out.println("Invalid category! Cannot be blank or contain commas.");
+                            continue;
+                        }
+                        trying = false;
+                    }
+
                     Expense expense = new Expense(name, cost, category);
                     expenses.add(expense);
                     System.out.println("Expense added successfully!");
@@ -122,12 +141,27 @@ public class ExpenseTracker {
             System.out.println("Error saving expenses!");
         }
     }
+
     public static void loadExpenses(ArrayList<Expense> expenses) {
         try (BufferedReader reader = new BufferedReader(new FileReader("expenses.csv"))) {
             String line;
             while((line = reader.readLine()) != null){
-                String[] parts = line.split(",");
-                BigDecimal cost = new BigDecimal(parts[1]);
+                String[] parts = line.split(",", -1);
+                if (parts.length != 3 || parts[0].isBlank() || parts[2].isBlank()){
+                    System.out.println("Skipping invalid expense!");
+                    continue;
+                }
+
+                BigDecimal cost = null;
+                try {
+                    cost = new BigDecimal(parts[1]);
+                    if(cost.compareTo(BigDecimal.ZERO) <= 0) throw new NumberFormatException();
+                    cost = cost.setScale(2, RoundingMode.UNNECESSARY);
+                }
+                catch (NumberFormatException | ArithmeticException e) {
+                    System.out.println("Skipping invalid expense!");
+                    continue;
+                }
                 Expense newExpense = new Expense(parts[0], cost, parts[2]);
                 expenses.add(newExpense);
             }
@@ -139,5 +173,4 @@ public class ExpenseTracker {
             System.out.println("Error reading file!");
         }
     }
-
 }
