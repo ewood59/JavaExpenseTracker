@@ -1,4 +1,7 @@
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.math.BigDecimal;
@@ -132,13 +135,21 @@ public class ExpenseTracker {
 
         input.close();
     }
+
     public static void saveExpenses(ArrayList<Expense> expenses){
-        try (PrintWriter writer = new PrintWriter(new FileWriter("expenses.csv"))) {
-            for(Expense e : expenses){
-                writer.println(e.getName() + "," + e.getAmount() + "," + e.getCategory());
+        Path original = Path.of("expenses.csv");
+        Path temp = Path.of("expenses-temp.csv");
+
+        try{
+            try (PrintWriter writer = new PrintWriter(new FileWriter(temp.toFile()))) {
+                for (Expense e : expenses) {
+                    writer.println(e.getName() + "," + e.getAmount() + "," + e.getCategory());
+                }
+                if (writer.checkError()) throw new IOException("Error writing temporary file!");
             }
+            Files.move(temp, original, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            System.out.println("Error saving expenses!");
+            System.out.println("Error saving expenses: " + e.getMessage());
         }
     }
 
